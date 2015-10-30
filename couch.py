@@ -87,27 +87,18 @@ def getDocItems(dType):
       'info',
        ]
 
-  return r
+  elif dType.lower() == 'event':
+    r = [
+      'eventname',
+      'info',
+      'startime',
+      'endtime',
+      'price',
+      'hashtag',
+      'medialist',
+       ]
 
-def add(dType,name):
-  keys = getDocItems(dType)
-  dic = {'type' : dType}
-  print('Adding {} type Doc: {}'.format(dType,name))
-  for i in keys:
-    if i == 'name':
-     dic[i] = name 
-    elif i == 'taglist':
-      l = []
-      t = raw_input("Type a search tag: ")
-      while (t != ''):
-        l.append(t)
-        t = raw_input("Type a search tag: ")
-      if len(l) > 0: dic[i] = l
-    else:
-      t = raw_input("Type {} {}: ".format(dType,i))
-      if t != '': dic[i] = t
-  print('Adding {}'.format(name))
-  return(dic)
+  return r
 
 def searchDB(db,dType,search):
   keys = getDocItems(dType)

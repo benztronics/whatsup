@@ -11,34 +11,56 @@ def viewAll():
   c = couch.connectSRV(srv)
   couch.viewAll(c)
 
-def addEvent():
-  c = couch.connectSRV(srv)
-  db = c['event']
-  item = raw_input("Search For Artist: ")
-  f = couch.searchDB(db,'artist',item)
-  count = 0
-  menu = {}
-  for a in f:
-    count += 1
-    menu[str(count)]=db[a]['name']
-  options = menu.keys()
-  options.sort()
-  for entry in options:
-    print entry, menu[entry]
-  selection = raw_input("Please the Artist Number: ")
-  print(menu[selection])
+def createDoc(db,dType,name):
+  keys = couch.getDocItems(dType)
+  dic = {'type' : dType}
+  print('Adding {} type Doc: {}'.format(dType,name))
+  if dType == 'event':
+    searchItems = ['artist','venue','agegroup','region']
+    for s in searchItems:
+      item = raw_input("Search For {}: ".format(s))
+      f = couch.searchDB(db,s,item)
+      count = 0
+      menu = {}
+      for a in f:
+        count += 1
+        menu[str(count)] = {'name' : db[a]['name'], 'id' : a}
+      options = menu.keys()
+      options.sort()
+      for entry in options:
+        print entry, menu[entry]['name']
+      selection = raw_input("Please select the {} Number: ".format(s))
+      print(menu[selection]['id'])
+      dic[s] = menu[selection]['id']
+    print(dic)
+  for i in keys:
+    if i == 'name':
+     dic[i] = name 
+    elif 'list' in i:
+      l = []
+      t = raw_input("Type a {} item: ".format(i))
+      while (t != ''):
+        l.append(t)
+        t = raw_input("Type a {} item: ".format(i))
+      if len(l) > 0: dic[i] = l
+    else:
+      t = raw_input("Type {} {}: ".format(dType,i))
+      if t != '': dic[i] = t
+  print('Adding {}'.format(name))
+  return(dic)
+
 
 def addDoc(dType):
   c = couch.connectSRV(srv)
   db = c['event']
-  if dType != 'crawler':
+  if dType != 'crawler' and dType != 'event':
     item = raw_input("Type {} Name: ".format(dType))
     f = couch.searchDB(db,dType,item)
   else:
     f = []
-    item = 'crawler'
+    item = dType
   if len(f) < 1:
-    dic = couch.add(dType, item)
+    dic = createDoc(db,dType, item)
     couch.save(db,dic)
   else:
     print('Found the Following Keys:')
@@ -107,7 +129,7 @@ def addMenu():
     elif selection == '5':
       addDoc('ageGroup')
     elif selection == '6':
-      addEvent()
+      addDoc('event')
     elif selection == '0':
       break
     else:
